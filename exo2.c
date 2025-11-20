@@ -9,11 +9,21 @@ typedef struct struct_tree{
 	int eq;
 } Tree;
 
+void checkpoint(int* c){//fonction de débogage
+	printf("Checkpoint %d\n",*c);
+	fflush(stdout);
+	*c=*c+1;
+}
+
+void anyradiance(int a, char* string){
+	printf("Erreur %d à %s\n",a,string);
+	exit(a);	
+}
+
 Tree* createAVL(int a){
 	Tree* Na=malloc(sizeof(Tree));
 	if(Na==NULL){
-		printf("Erreur mémoire\n");
-		exit(1);
+		anyradiance(1,"mémoire");
 	}
 	Na->value=a;
 	Na->eq=0;
@@ -50,30 +60,7 @@ int max(int a, int b, int c, int d){
 	return max;
 }
 
-Tree* insertAVL(Tree* avl, int a, int* h){
-	if(avl==NULL){	//le noeud est créé, on met l'équilibre de son père à 1 pour être modifié plus tard;
-		*h=1;
-		return createAVL(a);
-	}
-	if (a<avl->value){	//le noeud est créé à gauche, donc l'équilibre va dans le sens gauche
-		avl->ls=insertAVL(avl->ls,a,h);
-		*h=-*h;
-	}
-	if(a>avl->value){	//le noeud est créé à droite, donc l'équilibre reste dans le sens droit
-		avl->rs=insertAVL(avl->rs,a,h);
-	}
-	*h=0;	//le noeud n'est pas créé
-	if(*h!=0){	//l'équilibre est changé
-		avl->eq+=*h;	//ajout de h à l'équilibre
-		//equilibrage
-		if(avl->eq==0){	//equilibre a été nullifié
-			*h=0;	//
-		} else {
-			*h=1;
-		}
-	}
-	return avl;
-}
+
 
 Tree* ajouterfilsgauche(Tree* avl, int a){
 	if(avl==NULL){
@@ -178,36 +165,98 @@ int prefixe(Tree* avl){
 Tree* equilibreAVL(Tree* a){
 	if(a==NULL){
 		printf("Erreur 78\n");
-		exit(68);
+		exit(78);
 	}
 	if(a->eq>=2){
-		if(a->rs->eq<=0){
+		if(a->rs->eq<0){
 			a->rs=rotationdroite(a->rs);
 		}
-		return rotationgauche(a);
+		return rotationgauche(a); //a=rotationgauche(a)
 	} else if(a->eq<=-2){
-		if(a->ls->eq>=0){
+		if(a->ls->eq>0){
 			a->ls=rotationgauche(a->ls);
 		}
 		return rotationdroite(a);
 	}
+	return a;//IMPORTANT!!!!!!!!!!!!
+}
+
+Tree* insertAVL(Tree* avl, int a, int* h){
+	if(h==NULL){//vérification variables
+		printf("Erreur 56\n");
+		exit(56);
+	}
+	if(avl==NULL){	//le noeud est créé, on met l'équilibre de son père à 1 pour être modifié plus tard;
+		*h=1;
+		return createAVL(a);
+	} else if (a<avl->value){	//le noeud est créé à gauche, donc l'équilibre va dans le sens gauche
+		avl->ls=insertAVL(avl->ls,a,h);
+		*h=-*h;
+	}else if(a>avl->value){	//le noeud est créé à droite, donc l'équilibre reste dans le sens droit
+		avl->rs=insertAVL(avl->rs,a,h);
+	}else {
+		*h=0;	//le noeud n'est pas créé
+	}
+	if(*h!=0){	//l'équilibre est changé
+		avl->eq+=*h;	//ajout de h à l'équilibre
+		avl=equilibreAVL(avl);
+		if(avl->eq==0){	//equilibre a été nullifié
+			*h=0;	//
+		} else {
+			*h=1;
+		}
+	}
+	return avl;
+}
+
+Tree* insertAVL2(Tree* avl, int a, int* h){
+	if(avl==NULL){	//on créé la branche
+		*h=1;
+		return createAVL(a);
+	}else if(a<avl->value){//on crée le noeud à gauche
+		avl->ls=insertAVL2(avl->ls,a,h);	//on rééxécute la fonction au fils gauche
+		*h=-*h;	//on inverse la valeur de h, donc si le fils est créé, c'est -1, sinon c'est 0
+	}else if(a>avl->value){// on créé le noeud a droite
+		avl->rs=insertAVL2(avl->rs,a,h);
+		//pas de modifs de h, car si c'est >0, ça reste identique, sinon, c'est que le noeud n'a pas été rajouté
+	} else  {
+		*h=0;
+	}
+	if(*h!=0){
+		avl->eq+=*h;
+		avl=equilibreAVL(avl);
+		if(avl->eq==0){//l'équilibre a été nullifié, on met le poids du noeud supérieur à 0
+			*h=0;
+		} else {//l'équilibre n'est pas nullifié, on garde le poids pour le noeud supérieur
+			*h=1;
+		}
+	}
+	return avl;//retourner le noeud actuel si il n'y a pas eu création de noeud
+}
+
+Tree* supAVL(Tree* avl, int a,int* h){
+	if(avl==NULL){
+		*h=0;
+		return avl;
+	}
+	
+	return avl;
 }
 
 int main(){
-	int a,h;
+	int a,h,checker=1;
 	Tree* avl=NULL;
 	avl=createAVL(10);
-	insertAVL(avl,5,&h);
-	insertAVL(avl,20,&h);
-	insertAVL(avl,15,&h);
-	insertAVL(avl,13,&h);
-	insertAVL(avl,17,&h);
-	insertAVL(avl,26,&h);
-	avl->eq=2;
-	avl->rs->eq=-1;
+	avl=insertAVL(avl,5,&h);	//avl=insert parce que l'équilibrage change le premier membre de l'arbre
+	avl=insertAVL(avl,20,&h);
+	avl=insertAVL(avl,15,&h);
+	avl=insertAVL(avl,13,&h);
+	avl=insertAVL(avl,17,&h);
+	avl=insertAVL(avl,26,&h);
+	//checkpoint(&checker);
 	prefixe(avl);
 	printf("\n");
-	avl=equilibreAVL(avl);
+	//avl=equilibreAVL(avl);
 	prefixe(avl);
 	printf("\n");
 	return 0;
