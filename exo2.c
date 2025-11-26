@@ -234,12 +234,36 @@ Tree* insertAVL2(Tree* avl, int a, int* h){
 	return avl;//retourner le noeud actuel si il n'y a pas eu création de noeud
 }
 
+Tree* suppminAVL(Tree* a, int* h, int* e){
+
+}
+
 Tree* supAVL(Tree* avl, int a,int* h){
+	Tree* tmp;
 	if(avl==NULL){
 		*h=0;
 		return avl;
+	} else if(a<avl->value){
+		a->fg=supAVL(avl,a,h);
+		*h=-*h;
+	} else if(a>avl->value){
+		a->fd=supAVL(avl,a,h);
+	} else if(avl->rs!=NULL){
+		a->rs=suppminAVL(avl,h,&(avl->value));
+	} else {
+		tmp=a;
+		a=a->fg;
+		free(tmp);
+		*h=-1;
 	}
-	
+	if(*h=0 || a==NULL){
+		a->eq=a->eq+*h;
+		if(a->eq==0){
+			*h=0;
+		} else {
+			*h=-1;
+		}
+	}
 	return avl;
 }
 
