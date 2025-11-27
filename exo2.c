@@ -235,7 +235,28 @@ Tree* insertAVL2(Tree* avl, int a, int* h){
 }
 
 Tree* suppminAVL(Tree* a, int* h, int* e){
-
+	Tree* tmp;
+	if(a->ls==NULL){
+		*e=a->value;
+		tmp=a;
+		a=a->rs;
+		free(tmp);
+		*h=-1;
+		return a;
+	} else{
+		a->ls=suppminAVL(a->ls,h,e);
+		*h=-*h;
+	}
+	if(*h!=0){
+		a->eq=a->eq+*h;
+		a=equilibreAVL(a);
+		if(a->eq==0){
+			*h=-1;
+		} else {
+			*h=0;
+		}
+	}
+	return a;
 }
 
 Tree* supAVL(Tree* avl, int a,int* h){
@@ -244,24 +265,24 @@ Tree* supAVL(Tree* avl, int a,int* h){
 		*h=0;
 		return avl;
 	} else if(a<avl->value){
-		a->fg=supAVL(avl,a,h);
+		avl->ls=supAVL(avl,a,h);
 		*h=-*h;
 	} else if(a>avl->value){
-		a->fd=supAVL(avl,a,h);
+		avl->rs=supAVL(avl,a,h);
 	} else if(avl->rs!=NULL){
-		a->rs=suppminAVL(avl,h,&(avl->value));
+		avl->rs=suppminAVL(avl,h,&(avl->value));
 	} else {
-		tmp=a;
-		a=a->fg;
+		tmp=avl;
+		avl=avl->rs;
 		free(tmp);
 		*h=-1;
 	}
-	if(*h=0 || a==NULL){
-		a->eq=a->eq+*h;
-		if(a->eq==0){
-			*h=0;
-		} else {
+	if(*h!=0){
+		avl->eq=avl->eq+*h;
+		if(avl->eq==0){
 			*h=-1;
+		} else {
+			*h=0;
 		}
 	}
 	return avl;
@@ -280,7 +301,7 @@ int main(){
 	//checkpoint(&checker);
 	prefixe(avl);
 	printf("\n");
-	//avl=equilibreAVL(avl);
+	avl=supAVL(avl,20,&h);
 	prefixe(avl);
 	printf("\n");
 	return 0;
